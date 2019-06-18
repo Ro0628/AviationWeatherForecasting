@@ -30,24 +30,23 @@ pd.set_option('display.width', 1000)
 #not sure if i need squeezed
 from pandas import read_csv
 
-p_file = "/Users/ronaldajohnson/PycharmProjects/AviationWeatherForecasting/data/WeatherData.csv"
-series = read_csv(p_file, index_col=0)
-print(type(series))
-print(series.head())
+file_orig = "/Users/ronaldajohnson/PycharmProjects/AviationWeatherForecasting/data/WeatherData.csv"
+file_cleaned = "/Users/ronaldajohnson/PycharmProjects/AviationWeatherForecasting/data/WeatherData_cleaned.csv"
+file_top_features = "/Users/ronaldajohnson/PycharmProjects/AviationWeatherForecasting/data/WeatherData_topfeatures.csv"
 
-clean_data = clean_csv_file(p_file)
+# 1 Clean File Data
+df_clean_orig = clean_csv_file(file_orig)
+print(df_clean_orig.head())
 
-print(clean_data.head())
-file_name = "/Users/ronaldajohnson/PycharmProjects/AviationWeatherForecasting/data/WeatherData_cleaned.csv"
+df_clean_orig.to_csv(file_cleaned, index=False)
 
-clean_data.to_csv(file_name, index=False)
+# 2 Find, Plot and return top features
+# feature_data = pd.read_csv(file_cleaned, sep=',', error_bad_lines=False, index_col=False, dtype='unicode' )
+#
+# feature_data[(feature_data.YEAR == 1998) & (feature_data.STATION_CODES == 0)]
+# feature_data = feature_data.drop(['YEAR'], axis=1)
+#
+# df_top_feature = calcPlotFeatureImportance("AVG_DAILY_TEMP_ALL_HOURS__F", feature_data)
 
-feature_data = clean_data.copy(deep=False)
 
-feature_data[(feature_data.YEAR == 1998) & (feature_data.STATION_CODES == 0)]
-feature_data = feature_data.drop(['YEAR'], axis=1)
-
-print(feature_data.head())
-
-calcPlotFeatureImportance("AVG_DAILY_TEMP_ALL_HOURS__F",feature_data)
 
