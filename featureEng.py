@@ -13,11 +13,13 @@ pd.set_option('display.width', 1000)
 def calcPlotFeatureImportance(predictFeature, df):
     #### Use Random Forests for Plot the Importance of Features
 
-    dataframe = df.sample(frac=0.005)
+    dataframe = df.sample(frac=0.01)
     #dataframe = df
     cols = df.columns
     topFeatures = []
     max_topFeatures = 10
+
+
 
     X = np.array(dataframe.drop(predictFeature, axis=1))
     y = np.array(dataframe[predictFeature]).astype(int)
@@ -31,6 +33,9 @@ def calcPlotFeatureImportance(predictFeature, df):
     std = np.std([tree.feature_importances_ for tree in forest.estimators_],
                  axis=0)
     indices = np.argsort(importances)[::-1]
+
+
+
     # Print the feature ranking
     print("Feature ranking:")
 

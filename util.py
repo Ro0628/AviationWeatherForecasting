@@ -8,10 +8,21 @@ print(__doc__)
 from sklearn.datasets import make_classification
 from sklearn.ensemble import ExtraTreesClassifier
 
-
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
 pd.set_option('display.width', 1000)
+
+#global file names
+file_orig="/Users/ronaldajohnson/PycharmProjects/AviationWeatherForecasting/data/WeatherData.csv"
+file_cleaned="/Users/ronaldajohnson/PycharmProjects/AviationWeatherForecasting/data/WeatherData_cleaned.csv"
+file_train_split="/Users/ronaldajohnson/PycharmProjects/AviationWeatherForecasting/data/WeatherData_TrainingSet_Split.csv"
+file_test_split="/Users/ronaldajohnson/PycharmProjects/AviationWeatherForecasting/data/WeatherData_TestingSet_Split.csv"
+file_train="/Users/ronaldajohnson/PycharmProjects/AviationWeatherForecasting/data/WeatherData_TrainingSet.csv"
+file_test ="/Users/ronaldajohnson/PycharmProjects/AviationWeatherForecasting/data/WeatherData_TestingSet.csv"
+file_val_split="/Users/ronaldajohnson/PycharmProjects/AviationWeatherForecasting/data/WeatherData_ValidationSet_Split.csv"
+file_station= "/Users/ronaldajohnson/PycharmProjects/AviationWeatherForecasting/data/WeatherData_TestingStation.csv"
+
+
 
 def returnDateDayOfYear(dateStr):
     datetime(dateStr).timetuple().tm_yday;
@@ -76,24 +87,31 @@ def clean_csv_file(p_file):
 
     log("Imputing/Replacing", "Find and replace missing or null values")
 
+
     print("%%%% print missing or Null in columns %%%%")
-    # print((weather_data == 0).sum())
-    # print((weather_data.isnull()).sum())
+    #print((weather_data == 0).sum())
+    #print((weather_data.isnull()).sum())
+    # comparing values before dropping null column
+    print("\nColumn number before dropping Null column\n",
+          len(weather_data.dtypes))
 
     print("%%%% remove columns with more than 80 % NaN value(NULL) %%%%")
     limitPer = len(weather_data) * 1
     weather_data=weather_data.dropna(axis=1, thresh=limitPer)
 
+    print("\nColumn number after 80% dropping Null column\n",
+          len(weather_data.dtypes))
+
     print("%%%% Impute columns with missing value using avg %%%%")
 
     weather_data.fillna(weather_data.mean())
 
-    #print(np.isnan(weather_data).sum())
-
+   # print(np.isnan(weather_data).sum())
 
     print("%%%% print missing or Null in columns %%%%")
 
-    print(weather_data.head())
+    print("\n Final weather_data shape",
+          weather_data.shape)
 
     return weather_data
 
@@ -110,22 +128,27 @@ def derive_nth_day_feature(df, feature, N):
     df[col_name] = nth_prior_measurements
 
 
-def createTestAndTrainingSet(file_cleaned,file_training_set,file_testing_set):
+def createTestAndTrainingSet():
     # create train test partition
+    # create train test sets
     train = pd.read_csv(file_cleaned, sep=',', error_bad_lines=False)
     train["DATE"] = pd.to_datetime(train["DATE"])
-    train = train[(train['DATE'] < '2005-01-01')]
-    train = train.reset_index(drop=True)
-    train.to_csv(file_training_set, index=False)
+    train = train[(train['DATE'] < '2004-01-01')]
+    train.to_csv(file_train_split, index=False)
 
     test = pd.read_csv(file_cleaned, sep=',', error_bad_lines=False)
     test["DATE"] = pd.to_datetime(test["DATE"])
-    test = test[(test['DATE'] > '2005-01-01')]
-    test = train.reset_index(drop=True)
-    test.to_csv(file_testing_set, index=False)
+    test = test[test["DATE"].isin(pd.date_range('2004-01-01', '2005-12-31'))]
+    test.to_csv(file_test_split, index=False)
+
+    val = pd.read_csv(file_cleaned, sep=',', error_bad_lines=False)
+    val["DATE"] = pd.to_datetime(val["DATE"])
+    val = val[(val['DATE'] > '2006-01-01')]
+    val.to_csv(file_val_split, index=False)
 
     print('Train Dataset:', train.shape)
     print('Test Dataset:', test.shape)
+    print('Val Dataset:', val.shape)
 
 
 
