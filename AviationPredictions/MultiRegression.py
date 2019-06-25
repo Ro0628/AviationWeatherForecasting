@@ -1,6 +1,4 @@
-# Author: Tim Head <betatim@gmail.com>
-#
-# License: BSD 3 clause
+#Ronalda Johnson
 
 import numpy as np
 import pandas as pd
