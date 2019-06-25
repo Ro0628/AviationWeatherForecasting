@@ -24,6 +24,8 @@ def calcPlotFeatureImportance(predictFeature, df):
     X = np.array(dataframe.drop(predictFeature, axis=1))
     y = np.array(dataframe[predictFeature]).astype(int)
 
+    print(X.shape)
+    print(y.shape)
 
     # Build a forest and compute the feature importances
     forest = ExtraTreesClassifier(n_estimators=250,
