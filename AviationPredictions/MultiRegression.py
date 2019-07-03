@@ -10,9 +10,11 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import r2_score
 from featureEng import calcPlotFeatureImportance
 #import utility file names
-from util import file_orig,file_cleaned,file_test_split,file_train_split,file_val_split,file_train,file_test
+from util import file_orig,file_cleaned,file_test_split,file_train_split,file_val_split
+from util import file_train,file_test
+from pandas import concat
 
-
+file_mr_results= "/Users/ronaldajohnson/PycharmProjects/AviationWeatherForecasting/data/WeatherData_MultiRegressionResults.csv"
 # Create a random dataset
 
 cleaned_df = pd.read_csv(file_train_split)
@@ -25,7 +27,7 @@ feature_data = pd.read_csv(file_cleaned, sep=',', error_bad_lines=False)
 feature_data_noDate = feature_data.drop(['DATE'], axis=1)
 
 # Find, Plot and return top features (create final top features csv file)
-top_features= calcPlotFeatureImportance("WBI_24_LETTER_CODE_ALL_HOURS_CODES", feature_data_noDate)
+top_features= calcPlotFeatureImportance("AVG_DAILY_TEMP_ALL_HOURS__F", feature_data_noDate)
 
 cleaned_df.dropna(axis=0,how='any')
 
@@ -52,30 +54,143 @@ for feature in top_features:
 
 #create data frame with filtered feature in trained and test data
 df = pd.DataFrame(cleaned_df)
-df=df.drop(['DATE'], axis=1)
 
 df_t = pd.DataFrame(test_df)
-df_t= df_t.drop(['DATE'], axis=1)
 
 df_v =  pd.DataFrame(val_df)
-df_v= df_v.drop(['DATE'], axis=1)
 
 
+#*** Train ***
+#create sliding window for next  days  temp
+feature_df = df.AVG_DAILY_TEMP_ALL_HOURS__F
+shifted = feature_df.shift(1)
+window = shifted.rolling(window=3)
+means = window.mean()
+df_concat = concat([means, feature_df], axis=1)
+df_concat.columns = ['AVG_DAILY_TEMP_ALL_HOURS__F_PLUS_1', 'AVG_DAILY_TEMP_ALL_HOURS__F']
+print(df_concat.head(5))
+
+df['AVG_DAILY_TEMP_ALL_HOURS__F_PLUS_1'] = means
+
+
+feature_df = df.HIGH_TEMP_F
+shifted = feature_df.shift(1)
+window = shifted.rolling(window=3)
+means = window.mean()
+df_concat = concat([means, feature_df], axis=1)
+df_concat.columns = ['HIGH_TEMP_F_PLUS_1', 'HIGH_TEMP_F']
+print(df_concat.head(5))
+
+df['HIGH_TEMP_F_PLUS_1'] = means
+
+feature_df = df.LOW_TEMP__F
+shifted = feature_df.shift(1)
+window = shifted.rolling(window=3)
+means = window.mean()
+df_concat = concat([means, feature_df], axis=1)
+df_concat.columns = ['LOW_TEMP_F_PLUS_1', 'LOW_TEMP_F']
+print(df_concat.head(5))
+
+df['LOW_TEMP_F_PLUS_1'] = means
+df = df.dropna(axis=0, how='any')
+
+#*** test ****
+#create sliding window for next  days  temp
+feature_df = df_t.AVG_DAILY_TEMP_ALL_HOURS__F
+shifted = feature_df.shift(1)
+window = shifted.rolling(window=3)
+means = window.mean()
+df_concat = concat([means, feature_df], axis=1)
+df_concat.columns = ['AVG_DAILY_TEMP_ALL_HOURS__F_PLUS_1', 'AVG_DAILY_TEMP_ALL_HOURS__F']
+print(df_concat.head(5))
+
+df_t['AVG_DAILY_TEMP_ALL_HOURS__F_PLUS_1'] = means
+
+
+feature_df = df_t.HIGH_TEMP_F
+shifted = feature_df.shift(1)
+window = shifted.rolling(window=3)
+means = window.mean()
+df_concat = concat([means, feature_df], axis=1)
+df_concat.columns = ['HIGH_TEMP_F_PLUS_1', 'HIGH_TEMP_F']
+print(df_concat.head(5))
+
+df_t['HIGH_TEMP_F_PLUS_1'] = means
+
+feature_df = df_t.LOW_TEMP__F
+shifted = feature_df.shift(1)
+window = shifted.rolling(window=3)
+means = window.mean()
+df_concat = concat([means, feature_df], axis=1)
+df_concat.columns = ['LOW_TEMP_F_PLUS_1', 'LOW_TEMP_F']
+print(df_concat.head(5))
+
+df_t['LOW_TEMP_F_PLUS_1'] = means
+df_t = df_t.dropna(axis=0, how='any')
+
+
+
+#*** val ****
+#create sliding window for next  days  temp
+feature_df = df_v.AVG_DAILY_TEMP_ALL_HOURS__F
+shifted = feature_df.shift(1)
+window = shifted.rolling(window=3)
+means = window.mean()
+df_concat = concat([means, feature_df], axis=1)
+df_concat.columns = ['AVG_DAILY_TEMP_ALL_HOURS__F_PLUS_1', 'AVG_DAILY_TEMP_ALL_HOURS__F']
+print(df_concat.head(5))
+
+df_v['AVG_DAILY_TEMP_ALL_HOURS__F_PLUS_1'] = means
+
+
+feature_df = df_v.HIGH_TEMP_F
+shifted = feature_df.shift(1)
+window = shifted.rolling(window=3)
+means = window.mean()
+df_concat = concat([means, feature_df], axis=1)
+df_concat.columns = ['HIGH_TEMP_F_PLUS_1', 'HIGH_TEMP_F']
+print(df_concat.head(5))
+
+df_v['HIGH_TEMP_F_PLUS_1'] = means
+
+feature_df = df_v.LOW_TEMP__F
+shifted = feature_df.shift(1)
+window = shifted.rolling(window=3)
+means = window.mean()
+df_concat = concat([means, feature_df], axis=1)
+df_concat.columns = ['LOW_TEMP_F_PLUS_1', 'LOW_TEMP_F']
+print(df_concat.head(5))
+
+df_v['LOW_TEMP_F_PLUS_1'] = means
+df_v = df_v.dropna(axis=0, how='any')
 
 
 print(df.shape)
 print(df_t.shape)
 print(df_v.shape)
 
-X_train = df[[col for col in df.columns if col not in ['LOW_TEMP__F','HIGH_TEMP_F','AVG_DAILY_TEMP_ALL_HOURS__F']]]
-y_train = df[['LOW_TEMP__F','HIGH_TEMP_F','AVG_DAILY_TEMP_ALL_HOURS__F']]
+df_dates = df['DATE']
+df_stations = df['STATION_CODES']
+df=df.drop(['DATE'], axis=1)
 
-X_test = df_t[[col for col in df_t.columns if col  not in ['LOW_TEMP__F','HIGH_TEMP_F','AVG_DAILY_TEMP_ALL_HOURS__F']]]
-y_test = df_t[['LOW_TEMP__F','HIGH_TEMP_F','AVG_DAILY_TEMP_ALL_HOURS__F']]
+df_t_dates = df_t['DATE']
+df_t_stations = df_t['STATION_CODES']
+df_t= df_t.drop(['DATE'], axis=1)
+
+df_v_dates = df_v['DATE']
+df_v_stations = df_v['STATION_CODES']
+df_v= df_v.drop(['DATE'], axis=1)
 
 
-X_val = df_v[[col for col in df_v.columns if col  not in ['LOW_TEMP__F','HIGH_TEMP_F','AVG_DAILY_TEMP_ALL_HOURS__F']]]
-y_val = df_v[['LOW_TEMP__F','HIGH_TEMP_F','AVG_DAILY_TEMP_ALL_HOURS__F']]
+X_train = df[[col for col in df.columns if col not in ['LOW_TEMP_F_PLUS_1','HIGH_TEMP_F_PLUS_1','AVG_DAILY_TEMP_ALL_HOURS__F_PLUS_1']]]
+y_train = df[['LOW_TEMP_F_PLUS_1','HIGH_TEMP_F_PLUS_1','AVG_DAILY_TEMP_ALL_HOURS__F_PLUS_1']]
+
+X_test = df_t[[col for col in df_t.columns if col  not in  ['LOW_TEMP_F_PLUS_1','HIGH_TEMP_F_PLUS_1','AVG_DAILY_TEMP_ALL_HOURS__F_PLUS_1']]]
+y_test = df_t[['LOW_TEMP_F_PLUS_1','HIGH_TEMP_F_PLUS_1','AVG_DAILY_TEMP_ALL_HOURS__F_PLUS_1']]
+
+
+X_val = df_v[[col for col in df_v.columns if col  not in ['LOW_TEMP_F_PLUS_1','HIGH_TEMP_F_PLUS_1','AVG_DAILY_TEMP_ALL_HOURS__F_PLUS_1']]]
+y_val = df_v[['LOW_TEMP_F_PLUS_1','HIGH_TEMP_F_PLUS_1','AVG_DAILY_TEMP_ALL_HOURS__F_PLUS_1']]
 
 print(X_train.shape)
 print(X_test.shape)
@@ -100,31 +215,17 @@ y_multirf = regr_multirf.predict(X_val)
 
 
 
-# # Plot the results
-# plt.figure()
-# s = 50
-# a = 0.4
-# plt.scatter(y_test[:, 0], y_test[:, 1], edgecolor='k',
-#             c="navy", s=s, marker="s", alpha=a, label="Data")
-# plt.scatter(y_multirf[:, 0], y_multirf[:, 1], edgecolor='k',
-#             c="cornflowerblue", s=s, alpha=a,
-#             label="Multi RF score=%.2f" % regr_multirf.score(X_test, y_test))
-# plt.scatter(y_rf[:, 0], y_rf[:, 1], edgecolor='k',
-#             c="c", s=s, marker="^", alpha=a,
-#             label="RF score=%.2f" % regr_rf.score(X_test, y_test))
-# plt.xlim([-6, 6])
-# plt.ylim([-6, 6])
-# plt.xlabel("target 1")
-# plt.ylabel("target 2")
-# plt.title("Comparing random forests and the multi-output meta estimator")
-# plt.legend()
-# plt.show()
-
 from sklearn.metrics import mean_absolute_error, median_absolute_error
 print("The Explained Variance: %.2f" % regr_multirf.score(X_val, y_val))
 print("The Mean Absolute Error: %.2f degrees celsius" % mean_absolute_error(y_val, y_multirf))
 
 
-df_results = pd.DataFrame({'Actual 0': y_val['LOW_TEMP__F'], 'Predicted 0': y_multirf[:,0],'Actual 1': y_val['HIGH_TEMP_F'], 'Predicted 1': y_multirf[:,1],'Actual 2': y_val['AVG_DAILY_TEMP_ALL_HOURS__F'], 'Predicted 2': y_multirf[:,2]})
-df_results
+df_results = pd.DataFrame({'Actual Low': y_val['LOW_TEMP_F_PLUS_1'], 'Predicted Low': y_multirf[:,0],'Actual High': y_val['HIGH_TEMP_F_PLUS_1'], 'Predicted High': y_multirf[:,1],'Actual Avg Daily Temp': y_val['AVG_DAILY_TEMP_ALL_HOURS__F_PLUS_1'], 'Predicted Actual Avg Daily Temp': y_multirf[:,2]})
+df_results['DATE'] = df_t_dates.astype(str)
+df_results['STATION_CODES'] = df_t_stations
+df_results.reindex()
+df_results.to_csv(file_mr_results,index=True)
+
+print(df_results)
+
 

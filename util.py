@@ -2,8 +2,9 @@ import pandas as pd
 import numpy as np
 import requests
 import matplotlib.pyplot as plt
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import LabelEncoder,OneHotEncoder
 from datetime import datetime
+from pandas import concat
 print(__doc__)
 from sklearn.datasets import make_classification
 from sklearn.ensemble import ExtraTreesClassifier
@@ -21,8 +22,9 @@ file_train="/Users/ronaldajohnson/PycharmProjects/AviationWeatherForecasting/dat
 file_test ="/Users/ronaldajohnson/PycharmProjects/AviationWeatherForecasting/data/WeatherData_TestingSet.csv"
 file_val_split="/Users/ronaldajohnson/PycharmProjects/AviationWeatherForecasting/data/WeatherData_ValidationSet_Split.csv"
 file_station= "/Users/ronaldajohnson/PycharmProjects/AviationWeatherForecasting/data/WeatherData_TestingStation.csv"
-
-
+file_mr_results= "/Users/ronaldajohnson/PycharmProjects/AviationWeatherForecasting/data/WeatherData_MultiRegressionResults.csv"
+file_dt_results= "/Users/ronaldajohnson/PycharmProjects/AviationWeatherForecasting/data/WeatherData_DTResults.csv"
+#file_station= "/Users/ronaldajohnson/PycharmProjects/AviationWeatherForecasting/data/WeatherData_MultiRegressionResults.csv"
 
 def returnDateDayOfYear(dateStr):
     datetime(dateStr).timetuple().tm_yday;
@@ -53,11 +55,22 @@ def clean_csv_file(p_file):
     weather_data.head().dtypes
 
 
-    log("Label Encoding","")
+    log("One hot Encoding","one hot encoding")
+    print("one hot")
 
     lb_enc = LabelEncoder()
 
     weather_data["STATION_CODES"] = lb_enc.fit_transform(weather_data["STATION"])
+    #
+    #
+    # # One-hot encode the data using pandas get_dummies
+    # onehot_encoder = OneHotEncoder(sparse=False)
+    # integer_encoded = lb_enc.reshape(len(lb_enc), 1)
+    # onehot_encoded = onehot_encoder.fit_transform(integer_encoded)
+    # print(onehot_encoded)
+    #
+    #pd.get_dummies(weather_data["STATION"])
+
 
     log("2nd Encoding", "Encoding after Replacing missing values")
 
@@ -81,7 +94,7 @@ def clean_csv_file(p_file):
     # weather_data["YEAR"] = year
 
     weather_data = weather_data.drop(
-        ['STATION', 'SUNSET_LOCAL_PM', 'SUNRISE_LOCAL_AM','WBI_2DIGIT_PREDOMINATE_WEATHER_ALL_HOURS__065', 'WBI_24_LETTER_CODE_ALL_HOURS', 'PREDOMINATE_WEATHER_TEXT_ALL_HOURS'], axis=1)
+        ['STATION','SUNSET_LOCAL_PM', 'SUNRISE_LOCAL_AM','WBI_2DIGIT_PREDOMINATE_WEATHER_ALL_HOURS__065', 'WBI_24_LETTER_CODE_ALL_HOURS', 'PREDOMINATE_WEATHER_TEXT_ALL_HOURS'], axis=1)
 
     print("Weather cols: " + weather_data.columns)
 
@@ -101,6 +114,8 @@ def clean_csv_file(p_file):
 
     print("\nColumn number after 80% dropping Null column\n",
           len(weather_data.dtypes))
+
+    #weather_data.loc[(weather_data.AVG_DAILY_TEMP_ALL_HOURS__F < -40), 'AVG_DAILY_TEMP_ALL_HOURS__F'] = np.NaN
 
     print("%%%% Impute columns with missing value using avg %%%%")
 
@@ -126,6 +141,15 @@ def derive_nth_day_feature(df, feature, N):
     nth_prior_measurements = [None]*N + [df[feature][i-N] for i in range(N, rows)]
     col_name = "{}_{}".format(feature, N)
     df[col_name] = nth_prior_measurements
+
+def derive_nth_day_plus1_feature(df, feature, N): #N is window
+    feature_df = df[feature].copy(deep=True)
+    shifted = feature_df.shift(1)
+    window = shifted.rolling(window=N)
+    means = window.mean()
+    df_concat = concat([means, feature_df], axis=1)
+    df_concat.columns = ['mean(t-3,t)', 't+1']
+    print(df_concat.head(5))
 
 
 def createTestAndTrainingSet():
