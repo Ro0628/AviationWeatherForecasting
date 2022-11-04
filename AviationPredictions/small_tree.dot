@@ -1,0 +1,33 @@
+digraph Tree {
+node [shape=box, style="rounded", color="black", fontname=helvetica] ;
+edge [fontname=helvetica] ;
+0 [label="HIGH_TEMP_F <= 60.2\nmse = 141.9\nsamples = 24947\nvalue = 50.5"] ;
+1 [label="COLDEST_WINDCHILL_TEMP__F <= 27.6\nmse = 57.4\nsamples = 13542\nvalue = 42.1"] ;
+0 -> 1 [labeldistance=2.5, labelangle=45, headlabel="True"] ;
+2 [label="COLDEST_WINDCHILL_TEMP__F <= 15.2\nmse = 40.0\nsamples = 4791\nvalue = 34.5"] ;
+1 -> 2 ;
+3 [label="mse = 35.3\nsamples = 1100\nvalue = 26.5"] ;
+2 -> 3 ;
+4 [label="mse = 17.3\nsamples = 3691\nvalue = 36.8"] ;
+2 -> 4 ;
+5 [label="COLDEST_WINDCHILL_TEMP__F <= 36.4\nmse = 18.4\nsamples = 8751\nvalue = 46.2"] ;
+1 -> 5 ;
+6 [label="mse = 9.9\nsamples = 4999\nvalue = 43.6"] ;
+5 -> 6 ;
+7 [label="mse = 8.0\nsamples = 3752\nvalue = 49.8"] ;
+5 -> 7 ;
+8 [label="HIGH_TEMP_F <= 77.1\nmse = 58.7\nsamples = 11405\nvalue = 60.5"] ;
+0 -> 8 [labeldistance=2.5, labelangle=-45, headlabel="False"] ;
+9 [label="COLDEST_WINDCHILL_TEMP__F <= 42.5\nmse = 22.0\nsamples = 7851\nvalue = 56.6"] ;
+8 -> 9 ;
+10 [label="mse = 16.3\nsamples = 2783\nvalue = 52.4"] ;
+9 -> 10 ;
+11 [label="mse = 10.6\nsamples = 5068\nvalue = 58.9"] ;
+9 -> 11 ;
+12 [label="DEPART_NORMAL__CDDS_ALL_HOURS__BASE_OF_65_F <= 2.1\nmse = 34.9\nsamples = 3554\nvalue = 68.9"] ;
+8 -> 12 ;
+13 [label="mse = 16.7\nsamples = 1929\nvalue = 65.2"] ;
+12 -> 13 ;
+14 [label="mse = 21.0\nsamples = 1625\nvalue = 73.3"] ;
+12 -> 14 ;
+}
